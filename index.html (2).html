@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absensi PT Teratech Data Inti</title>
+  <style>
+    :root {
+      --bg-day: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 100%);
+      --bg-night: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --btn-in: #0284c7;
+      --btn-in-hover: #0369a1;
+      --btn-out: #ea580c;
+      --btn-out-hover: #c2410c;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg-day);
+      transition: background 0.6s ease;
+    }
+
+    body.night-mode {
+      background: var(--bg-night);
+    }
+
+    .card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 420px;
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+      text-align: center;
+    }
+
+    .illustration-box {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      animation: floatAnim 3s ease-in-out infinite;
+    }
+
+    .day-illust { background: #fef3c7; box-shadow: 0 0 25px rgba(251, 191, 36, 0.4); }
+    .night-illust { background: #e0e7ff; box-shadow: 0 0 25px rgba(99, 102, 241, 0.4); }
+
+    @keyframes floatAnim {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .company-name {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #0284c7;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .clock-box {
+      background: #f1f5f9;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .live-time {
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .live-date {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus {
+      border-color: #0284c7;
+    }
+
+    .gps-status {
+      font-size: 12px;
+      color: #475569;
+      background: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px dashed #cbd5e1;
+      margin-bottom: 18px;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.3s;
+    }
+
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-clock-in { background: var(--btn-in); }
+    .btn-clock-in:hover { background: var(--btn-in-hover); }
+
+    .btn-clock-out { background: var(--btn-out); }
+    .btn-clock-out:hover { background: var(--btn-out-hover); }
+
+    .success-box {
+      display: none;
+      padding: 10px 4px;
+    }
+
+    .success-icon {
+      font-size: 54px;
+      margin-bottom: 10px;
+    }
+
+    .success-msg {
+      font-size: 15.5px;
+      line-height: 1.6;
+      color: var(--text-main);
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+
+    .btn-reset {
+      background: #e2e8f0;
+      color: #334155;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="company-name">PT Teratech Data Inti</div>
+
+    <div id="mainSection">
+      <div id="illustBox" class="illustration-box day-illust">☀️</div>
+      <h1 id="greetingTitle">Selamat Pagi!</h1>
+      <p id="greetingSub" class="subtitle">Yuk absen dulu sebelum mulai aktivitas hari ini.</p>
+
+      <div class="clock-box">
+        <div id="liveTime" class="live-time">00:00:00</div>
+        <div id="liveDate" class="live-date">Memuat tanggal...</div>
+      </div>
+
+      <form id="absenForm">
+        <div class="form-group">
+          <label for="namaKaryawan">Nama Karyawan</label>
+          <select id="namaKaryawan" required>
+            <option value="" disabled selected>-- Pilih Nama Kamu --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="keterangan">Catatan / Status (Opsional)</label>
+          <input type="text" id="keterangan" placeholder="Kosongkan jika hadir normal (atau isi: Izin / WFH)" />
+        </div>
+
+        <div id="gpsBox" class="gps-status">
+          📍 Mendeteksi lokasi kamu...
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit btn-clock-in">
+          Clock In
+        </button>
+      </form>
+    </div>
+
+    <div id="successSection" class="success-box">
+      <div id="successIcon" class="success-icon">🎉</div>
+      <div id="successMessage" class="success-msg"></div>
+      <button type="button" class="btn-reset" onclick="resetForm()">Kembali ke Halaman Awal</button>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMHAF0hy_gEE79JcQekpVHxDRxXaqEvwPCZRhJnK_EAB4bnSa2iYbRW71gjbHKtHEe/exec";
+
+    const DAFTAR_KARYAWAN = [
+      "Angela Febri",
+      "Pak Hamid",
+      "Mas Wisnu",
+      "Nova Samosir"
+      // Tambahkan nama karyawan lain di sini (pisahkan dengan koma)
+    ];
+
+    const selectNama = document.getElementById("namaKaryawan");
+    DAFTAR_KARYAWAN.forEach(nama => {
+      const opt = document.createElement("option");
+      opt.value = nama;
+      opt.textContent = nama;
+      selectNama.appendChild(opt);
+    });
+
+    let currentMode = "Clock In";
+
+    function updateClockAndMode() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const totalMinutes = hours * 60 + minutes;
+
+      const timeStr = now.toLocaleTimeString("id-ID", { hour12: false });
+      const dateStr = now.toLocaleDateString("id-ID", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+
+      document.getElementById("liveTime").textContent = timeStr;
+      document.getElementById("liveDate").textContent = dateStr;
+
+      // 05:00 (300 menit) s.d. 17:29 (1049 menit) => Clock In
+      // 17:30 (1050 menit) s.d. 04:59 (299 menit) => Clock Out
+      const isClockInTime = totalMinutes >= 300 && totalMinutes <= 1049;
+
+      const illustBox = document.getElementById("illustBox");
+      const greetingTitle = document.getElementById("greetingTitle");
+      const greetingSub = document.getElementById("greetingSub");
+      const submitBtn = document.getElementById("submit
