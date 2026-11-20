@@ -224,6 +224,13 @@
         </div>
 
         <div class="form-group">
+          <label for="divisiKaryawan">Divisi</label>
+          <select id="divisiKaryawan" required>
+            <option value="" disabled selected>-- Pilih Divisi Kamu --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label for="keterangan">Catatan / Status (Opsional)</label>
           <input type="text" id="keterangan" placeholder="Kosongkan jika hadir normal (atau isi: Izin / WFH)" />
         </div>
@@ -279,16 +286,40 @@
       "Uma Rusma"
     ];
 
-    function isiDropdownNama() {
+    const DAFTAR_DIVISI = [
+      "President Director",
+      "General Manager",
+      "FO",
+      "CME",
+      "SITAC",
+      "FAT",
+      "LOGISTIK",
+      "OB",
+      "HSE",
+      "PROJECT CONTROL"
+    ];
+
+    function isiDropdown() {
       try {
         const selectNama = document.getElementById("namaKaryawan");
-        if (!selectNama) return;
-        DAFTAR_KARYAWAN.forEach(function(nama) {
-          const opt = document.createElement("option");
-          opt.value = nama;
-          opt.textContent = nama;
-          selectNama.appendChild(opt);
-        });
+        if (selectNama) {
+          DAFTAR_KARYAWAN.forEach(function(nama) {
+            const opt = document.createElement("option");
+            opt.value = nama;
+            opt.textContent = nama;
+            selectNama.appendChild(opt);
+          });
+        }
+
+        const selectDivisi = document.getElementById("divisiKaryawan");
+        if (selectDivisi) {
+          DAFTAR_DIVISI.forEach(function(divisi) {
+            const opt = document.createElement("option");
+            opt.value = divisi;
+            opt.textContent = divisi;
+            selectDivisi.appendChild(opt);
+          });
+        }
       } catch (e) {
         console.error(e);
       }
@@ -322,8 +353,6 @@
         if (liveTimeEl) liveTimeEl.textContent = timeStr;
         if (liveDateEl) liveDateEl.textContent = dateStr;
 
-        // 05:00 (300 menit) s.d. 17:29 (1049 menit) => Clock In
-        // 17:30 (1050 menit) s.d. 04:59 (299 menit) => Clock Out
         const isClockInTime = totalMinutes >= 300 && totalMinutes <= 1049;
 
         const illustBox = document.getElementById("illustBox");
@@ -393,6 +422,7 @@
       e.preventDefault();
 
       const nama = document.getElementById("namaKaryawan").value;
+      const divisi = document.getElementById("divisiKaryawan").value;
       const keterangan = document.getElementById("keterangan").value.trim();
       const submitBtn = document.getElementById("submitBtn");
 
@@ -404,6 +434,7 @@
 
       const payload = {
         nama: nama,
+        divisi: divisi,
         jenis: currentMode,
         alamat: userAddress,
         koordinat: userCoords,
@@ -425,10 +456,10 @@
 
         if (currentMode === "Clock In") {
           successIcon.textContent = "🎉";
-          successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
+          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
         } else {
           successIcon.textContent = "🏠";
-          successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
+          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
         }
 
         successSection.style.display = "block";
@@ -447,7 +478,7 @@
       updateClockAndMode();
     }
 
-    isiDropdownNama();
+    isiDropdown();
     updateClockAndMode();
     setInterval(updateClockAndMode, 1000);
     detectLocation();
