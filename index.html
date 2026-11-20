@@ -167,6 +167,24 @@
     .btn-clock-out { background: var(--btn-out); }
     .btn-clock-out:hover { background: var(--btn-out-hover); }
 
+    .override-wrap {
+      margin-top: 10px;
+    }
+
+    .btn-override {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 4px 6px;
+    }
+
+    .btn-override:hover {
+      color: var(--text-main);
+    }
+
     .success-box {
       display: none;
       padding: 10px 4px;
@@ -242,6 +260,12 @@
         <button type="submit" id="submitBtn" class="btn-submit btn-clock-in">
           Clock In
         </button>
+
+        <div class="override-wrap">
+          <button type="button" id="overrideBtn" class="btn-override" onclick="toggleManualMode()">
+            Ubah ke Clock Out
+          </button>
+        </div>
       </form>
     </div>
 
@@ -326,9 +350,47 @@
     }
 
     let currentMode = "Clock In";
+    let manualOverrideMode = null;
 
     function padZero(n) {
       return n < 10 ? "0" + n : "" + n;
+    }
+
+    function applyModeUI(mode, hours) {
+      const illustBox = document.getElementById("illustBox");
+      const greetingTitle = document.getElementById("greetingTitle");
+      const greetingSub = document.getElementById("greetingSub");
+      const submitBtn = document.getElementById("submitBtn");
+      const overrideBtn = document.getElementById("overrideBtn");
+
+      currentMode = mode;
+
+      if (mode === "Clock In") {
+        document.body.classList.remove("night-mode");
+        illustBox.className = "illustration-box day-illust";
+        illustBox.textContent = hours < 11 ? "☀️" : "🌤️";
+        greetingTitle.textContent = hours < 11 ? "Selamat Pagi!" : "Selamat Siang!";
+        greetingSub.textContent = "Yuk absen masuk dulu sebelum mulai aktivitas hari ini.";
+        submitBtn.textContent = "Clock In";
+        submitBtn.className = "btn-submit btn-clock-in";
+        overrideBtn.textContent = "Ubah ke Clock Out";
+      } else {
+        document.body.classList.add("night-mode");
+        illustBox.className = "illustration-box night-illust";
+        illustBox.textContent = "🌙";
+        greetingTitle.textContent = "Waktunya Pulang!";
+        greetingSub.textContent = "Terima kasih untuk kerja kerasmu hari ini. Jangan lupa Clock Out ya!";
+        submitBtn.textContent = "Clock Out";
+        submitBtn.className = "btn-submit btn-clock-out";
+        overrideBtn.textContent = "Ubah ke Clock In";
+      }
+    }
+
+    function toggleManualMode() {
+      const hours = new Date().getHours();
+      const targetMode = currentMode === "Clock In" ? "Clock Out" : "Clock In";
+      manualOverrideMode = targetMode;
+      applyModeUI(targetMode, hours);
     }
 
     function updateClockAndMode() {
@@ -353,32 +415,9 @@
         if (liveTimeEl) liveTimeEl.textContent = timeStr;
         if (liveDateEl) liveDateEl.textContent = dateStr;
 
-        const isClockInTime = totalMinutes >= 300 && totalMinutes <= 1049;
-
-        const illustBox = document.getElementById("illustBox");
-        const greetingTitle = document.getElementById("greetingTitle");
-        const greetingSub = document.getElementById("greetingSub");
-        const submitBtn = document.getElementById("submitBtn");
-
-        if (isClockInTime) {
-          currentMode = "Clock In";
-          document.body.classList.remove("night-mode");
-          illustBox.className = "illustration-box day-illust";
-          illustBox.textContent = hours < 11 ? "☀️" : "🌤️";
-          greetingTitle.textContent = hours < 11 ? "Selamat Pagi!" : "Selamat Siang!";
-          greetingSub.textContent = "Yuk absen masuk dulu sebelum mulai aktivitas hari ini.";
-          submitBtn.textContent = "Clock In";
-          submitBtn.className = "btn-submit btn-clock-in";
-        } else {
-          currentMode = "Clock Out";
-          document.body.classList.add("night-mode");
-          illustBox.className = "illustration-box night-illust";
-          illustBox.textContent = "🌙";
-          greetingTitle.textContent = "Waktunya Pulang!";
-          greetingSub.textContent = "Terima kasih untuk kerja kerasmu hari ini. Jangan lupa Clock Out ya!";
-          submitBtn.textContent = "Clock Out";
-          submitBtn.className = "btn-submit btn-clock-out";
-        }
+        const autoMode = (totalMinutes >= 240 && totalMinutes <= 899) ? "Clock In" : "Clock Out";
+        const activeMode = manualOverrideMode || autoMode;
+        applyModeUI(activeMode, hours);
       } catch (e) {
         console.error(e);
       }
@@ -471,6 +510,7 @@
     });
 
     function resetForm() {
+      manualOverrideMode = null;
       document.getElementById("absenForm").reset();
       document.getElementById("successSection").style.display = "none";
       document.getElementById("mainSection").style.display = "block";
