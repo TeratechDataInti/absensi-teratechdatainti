@@ -206,6 +206,11 @@
       margin-bottom: 16px;
     }
 
+    .success-msg.late-msg {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+    }
+
     .btn-reset {
       background: #e2e8f0;
       color: #334155;
@@ -469,6 +474,7 @@
       submitBtn.textContent = "Menyimpan absensi...";
 
       const now = new Date();
+      const totalMinutes = now.getHours() * 60 + now.getMinutes();
       const jamSubmit = padZero(now.getHours()) + ":" + padZero(now.getMinutes());
 
       const payload = {
@@ -493,9 +499,17 @@
         const successMessage = document.getElementById("successMessage");
         const successIcon = document.getElementById("successIcon");
 
+        successMessage.classList.remove("late-msg");
+
         if (currentMode === "Clock In") {
-          successIcon.textContent = "🎉";
-          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
+          if (totalMinutes > 540) {
+            successIcon.textContent = "😅";
+            successMessage.classList.add("late-msg");
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
+          } else {
+            successIcon.textContent = "🎉";
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
+          }
         } else {
           successIcon.textContent = "🏠";
           successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
