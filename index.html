@@ -143,7 +143,26 @@
       border: 1px dashed #cbd5e1;
       margin-bottom: 18px;
       text-align: left;
-      line-height: 1.4;
+      line-height: 1.45;
+    }
+
+    .gps-status.gps-error {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+    }
+
+    .btn-retry-gps {
+      display: inline-block;
+      margin-top: 6px;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .btn-submit {
@@ -322,10 +341,10 @@
       "CME",
       "SITAC",
       "FAT",
-      "HSE",
       "LOGISTIK",
-      "PROJECT CONTROL",
-      "SUPPORT & GA"
+      "OB",
+      "HSE",
+      "PROJECT CONTROL"
     ];
 
     function isiDropdown() {
@@ -428,21 +447,39 @@
       }
     }
 
-    let userCoords = "Tidak terdeteksi";
-    let userAddress = "Lokasi tidak diizinkan";
+    let isLocationReady = false;
+    let userCoords = "";
+    let userAddress = "";
+
+    function showLocationBlockedUI(reasonText) {
+      isLocationReady = false;
+      const gpsBox = document.getElementById("gpsBox");
+      gpsBox.classList.add("gps-error");
+      gpsBox.innerHTML =
+        "⚠️ <b>Lokasi belum dinyalakan!</b><br>" +
+        reasonText + "<br>" +
+        "<button type='button' class='btn-retry-gps' onclick='detectLocation()'>Cek Ulang Lokasi</button>";
+    }
 
     function detectLocation() {
       const gpsBox = document.getElementById("gpsBox");
+      gpsBox.classList.remove("gps-error");
+
       if (!navigator.geolocation) {
-        gpsBox.textContent = "📍 Browser tidak mendukung deteksi lokasi.";
+        showLocationBlockedUI("Browser tidak mendukung deteksi lokasi.");
         return;
       }
+
+      isLocationReady = false;
+      gpsBox.innerHTML = "📍 Mendeteksi lokasi kamu...";
 
       navigator.geolocation.getCurrentPosition(
         async function(pos) {
           const lat = pos.coords.latitude.toFixed(6);
           const lon = pos.coords.longitude.toFixed(6);
           userCoords = lat + ", " + lon;
+          isLocationReady = true;
+          gpsBox.classList.remove("gps-error");
           gpsBox.innerHTML = "📍 Koordinat: <b>" + userCoords + "</b><br>Mengambil nama jalan...";
 
           try {
@@ -456,14 +493,21 @@
           }
         },
         function() {
-          gpsBox.textContent = "⚠️ Izin lokasi mati. Aktifkan GPS di HP/browser agar alamat tercatat.";
+          showLocationBlockedUI("Aktifkan GPS di HP/browser dan izinkan akses lokasi agar bisa absen.");
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
     document.getElementById("absenForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+
+      if (!isLocationReady || !userCoords) {
+        showLocationBlockedUI("Kamu belum bisa absen sebelum lokasi/GPS dinyalakan.");
+        alert("Lokasi belum dinyalakan! Aktifkan GPS / izin lokasi dulu ya sebelum Clock In / Clock Out.");
+        detectLocation();
+        return;
+      }
 
       const nama = document.getElementById("namaKaryawan").value;
       const divisi = document.getElementById("divisiKaryawan").value;
@@ -503,9 +547,9 @@
 
         if (currentMode === "Clock In") {
           if (totalMinutes > 540) {
-            successIcon.textContent = "🥹";
+            successIcon.textContent = "😅";
             successMessage.classList.add("late-msg");
-            successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 🥹 Janji besok harus on time ya!!!";
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
           } else {
             successIcon.textContent = "🎉";
             successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
@@ -530,6 +574,7 @@
       document.getElementById("mainSection").style.display = "block";
       document.getElementById("submitBtn").disabled = false;
       updateClockAndMode();
+      detectLocation();
     }
 
     isiDropdown();
