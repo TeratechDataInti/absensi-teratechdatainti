@@ -547,7 +547,7 @@
 
        if (currentMode === "Clock In") {
   if (totalMinutes > 540) {
-    successIcon.innerHTML = `<img src="telat.jpg" alt="Telat" style="width: 140px; height: 140px; object-fit: cover; border-radius: 16px;" />`;
+   successIcon.innerHTML = '<img src="telat.jpg" alt="Telat" style="width:140px;height:140px;object-fit:cover;border-radius:16px;">';
     successMessage.classList.add("late-msg");
     successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
   } else {
