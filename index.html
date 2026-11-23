@@ -554,9 +554,9 @@
             successIcon.textContent = "🎉";
             successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
           }
-        } else {
-          successIcon.textContent = "🏠";
-          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
+       } else {
+          successIcon.innerHTML = '<img src="pulang.jpg" alt="Clock Out" style="width:140px;height:140px;object-fit:cover;border-radius:16px;">';
+          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), makasih udah Clock Out di jam <b>" + jamSubmit + "</b>! Hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
         }
 
         successSection.style.display = "block";
