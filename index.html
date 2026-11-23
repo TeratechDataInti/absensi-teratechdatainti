@@ -384,4 +384,203 @@
       const illustBox = document.getElementById("illustBox");
       const greetingTitle = document.getElementById("greetingTitle");
       const greetingSub = document.getElementById("greetingSub");
-      const submitBtn = document.getElementById("
+      const submitBtn = document.getElementById("submitBtn");
+      const overrideBtn = document.getElementById("overrideBtn");
+
+      currentMode = mode;
+
+      if (mode === "Clock In") {
+        document.body.classList.remove("night-mode");
+        illustBox.className = "illustration-box day-illust";
+        illustBox.textContent = hours < 11 ? "☀️" : "🌤️";
+        greetingTitle.textContent = hours < 11 ? "Selamat Pagi!" : "Selamat Siang!";
+        greetingSub.textContent = "Yuk absen masuk dulu sebelum mulai aktivitas hari ini.";
+        submitBtn.textContent = "Clock In";
+        submitBtn.className = "btn-submit btn-clock-in";
+        overrideBtn.textContent = "Ubah ke Clock Out";
+      } else {
+        document.body.classList.add("night-mode");
+        illustBox.className = "illustration-box night-illust";
+        illustBox.textContent = "🌙";
+        greetingTitle.textContent = "Waktunya Pulang!";
+        greetingSub.textContent = "Terima kasih untuk kerja kerasmu hari ini. Jangan lupa Clock Out ya!";
+        submitBtn.textContent = "Clock Out";
+        submitBtn.className = "btn-submit btn-clock-out";
+        overrideBtn.textContent = "Ubah ke Clock In";
+      }
+    }
+
+    function toggleManualMode() {
+      const hours = new Date().getHours();
+      const targetMode = currentMode === "Clock In" ? "Clock Out" : "Clock In";
+      manualOverrideMode = targetMode;
+      applyModeUI(targetMode, hours);
+    }
+
+    function updateClockAndMode() {
+      try {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const totalMinutes = hours * 60 + minutes;
+
+        const timeStr = padZero(hours) + ":" + padZero(minutes) + ":" + padZero(seconds);
+
+        const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const bulanList = [
+          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+          "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+        const dateStr = hariList[now.getDay()] + ", " + now.getDate() + " " + bulanList[now.getMonth()] + " " + now.getFullYear();
+
+        const liveTimeEl = document.getElementById("liveTime");
+        const liveDateEl = document.getElementById("liveDate");
+        if (liveTimeEl) liveTimeEl.textContent = timeStr;
+        if (liveDateEl) liveDateEl.textContent = dateStr;
+
+        const autoMode = (totalMinutes >= 240 && totalMinutes <= 899) ? "Clock In" : "Clock Out";
+        const activeMode = manualOverrideMode || autoMode;
+        applyModeUI(activeMode, hours);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    let isLocationReady = false;
+    let userCoords = "";
+    let userAddress = "";
+
+    function showLocationBlockedUI(reasonText) {
+      isLocationReady = false;
+      const gpsBox = document.getElementById("gpsBox");
+      gpsBox.classList.add("gps-error");
+      gpsBox.innerHTML =
+        "⚠️ <b>Lokasi belum dinyalakan!</b><br>" +
+        reasonText + "<br>" +
+        "<button type='button' class='btn-retry-gps' onclick='detectLocation()'>Cek Ulang Lokasi</button>";
+    }
+
+    function detectLocation() {
+      const gpsBox = document.getElementById("gpsBox");
+      gpsBox.classList.remove("gps-error");
+
+      if (!navigator.geolocation) {
+        showLocationBlockedUI("Browser tidak mendukung deteksi lokasi.");
+        return;
+      }
+
+      isLocationReady = false;
+      gpsBox.innerHTML = "📍 Mendeteksi lokasi kamu...";
+
+      navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lon = pos.coords.longitude.toFixed(6);
+          userCoords = lat + ", " + lon;
+          isLocationReady = true;
+          gpsBox.classList.remove("gps-error");
+          gpsBox.innerHTML = "📍 Koordinat: <b>" + userCoords + "</b><br>Mengambil nama jalan...";
+
+          try {
+            const res = await fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon);
+            const data = await res.json();
+            userAddress = data.display_name || userCoords;
+            gpsBox.innerHTML = "📍 <b>Lokasi Terdeteksi:</b><br>" + userAddress;
+          } catch (err) {
+            userAddress = userCoords;
+            gpsBox.innerHTML = "📍 Koordinat terdeteksi: <b>" + userCoords + "</b>";
+          }
+        },
+        function() {
+          showLocationBlockedUI("Aktifkan GPS di HP/browser dan izinkan akses lokasi agar bisa absen.");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    document.getElementById("absenForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      if (!isLocationReady || !userCoords) {
+        showLocationBlockedUI("Kamu belum bisa absen sebelum lokasi/GPS dinyalakan.");
+        alert("Lokasi belum dinyalakan! Aktifkan GPS / izin lokasi dulu ya sebelum Clock In / Clock Out.");
+        detectLocation();
+        return;
+      }
+
+      const nama = document.getElementById("namaKaryawan").value;
+      const divisi = document.getElementById("divisiKaryawan").value;
+      const keterangan = document.getElementById("keterangan").value.trim();
+      const submitBtn = document.getElementById("submitBtn");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Menyimpan absensi...";
+
+      const now = new Date();
+      const totalMinutes = now.getHours() * 60 + now.getMinutes();
+      const jamSubmit = padZero(now.getHours()) + ":" + padZero(now.getMinutes());
+
+      const payload = {
+        nama: nama,
+        divisi: divisi,
+        jenis: currentMode,
+        alamat: userAddress,
+        koordinat: userCoords,
+        keterangan: keterangan
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById("mainSection").style.display = "none";
+        const successSection = document.getElementById("successSection");
+        const successMessage = document.getElementById("successMessage");
+        const successIcon = document.getElementById("successIcon");
+
+        successMessage.classList.remove("late-msg");
+
+        if (currentMode === "Clock In") {
+          if (totalMinutes > 540) {
+            successIcon.innerHTML = '<img src="telat.jpg" alt="Telat" style="width:140px;height:140px;object-fit:cover;border-radius:16px;">';
+            successMessage.classList.add("late-msg");
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
+          } else {
+            successIcon.textContent = "🎉";
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
+          }
+        } else {
+          successIcon.textContent = "🏠";
+          successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
+        }
+
+        successSection.style.display = "block";
+      } catch (error) {
+        alert("Gagal mengirim absen. Cek koneksi internet kamu lalu coba lagi.");
+        submitBtn.disabled = false;
+        updateClockAndMode();
+      }
+    });
+
+    function resetForm() {
+      manualOverrideMode = null;
+      document.getElementById("absenForm").reset();
+      document.getElementById("successSection").style.display = "none";
+      document.getElementById("mainSection").style.display = "block";
+      document.getElementById("submitBtn").disabled = false;
+      updateClockAndMode();
+      detectLocation();
+    }
+
+    isiDropdown();
+    updateClockAndMode();
+    setInterval(updateClockAndMode, 1000);
+    detectLocation();
+  </script>
+</body>
+</html>
