@@ -545,16 +545,15 @@
 
         successMessage.classList.remove("late-msg");
 
-if (currentMode === "Clock In") {
-  if (totalMinutes > 540) {
-    successIcon.innerHTML = `<img src="telat.jpg" alt="Telat" style="width: 140px; height: 140px; object-fit: cover; border-radius: 16px;" />`;
-    successMessage.classList.add("late-msg");
-    successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
-  } else {
-    successIcon.textContent = "🎉";
-    successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
-  }
-}
+        if (currentMode === "Clock In") {
+          if (totalMinutes > 540) {
+            successIcon.textContent = "😅";
+            successMessage.classList.add("late-msg");
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b>, kamu berhasil Clock In di jam <b>" + jamSubmit + "</b>, <b>TAPI KAMU TELAT!!</b> 😅 Besok harus on time ya!!!";
+          } else {
+            successIcon.textContent = "🎉";
+            successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil absen di jam <b>" + jamSubmit + "</b>, semangat yaa kerja hari ini!! 💪✨";
+          }
         } else {
           successIcon.textContent = "🏠";
           successMessage.innerHTML = "Selamat <b>" + nama + "</b> (" + divisi + "), kamu berhasil clock out di jam <b>" + jamSubmit + "</b>, hati-hati di jalan dan selamat istirahat yaa!! 🌙✨";
